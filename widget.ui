@@ -52,7 +52,7 @@
       <widget class="QPushButton" name="pushButton_search">
        <property name="geometry">
         <rect>
-         <x>870</x>
+         <x>760</x>
          <y>190</y>
          <width>91</width>
          <height>71</height>
@@ -170,7 +170,7 @@
          <rect>
           <x>760</x>
           <y>30</y>
-          <width>201</width>
+          <width>191</width>
           <height>31</height>
          </rect>
         </property>
@@ -501,7 +501,7 @@
           <x>10</x>
           <y>40</y>
           <width>131</width>
-          <height>20</height>
+          <height>24</height>
          </rect>
         </property>
         <layout class="QHBoxLayout" name="horizontalLayout_country">
@@ -523,7 +523,7 @@
           <x>150</x>
           <y>40</y>
           <width>181</width>
-          <height>20</height>
+          <height>24</height>
          </rect>
         </property>
         <layout class="QHBoxLayout" name="horizontalLayout_instytution">
@@ -548,7 +548,7 @@
           <x>340</x>
           <y>40</y>
           <width>131</width>
-          <height>21</height>
+          <height>24</height>
          </rect>
         </property>
         <layout class="QHBoxLayout" name="horizontalLayout_room">
@@ -621,7 +621,7 @@
          <string>AFE</string>
         </property>
        </widget>
-       <widget class="QWidget" name="">
+       <widget class="QWidget" name="layoutWidget">
         <property name="geometry">
          <rect>
           <x>10</x>
@@ -643,6 +643,19 @@
          </item>
         </layout>
        </widget>
+      </widget>
+      <widget class="QPushButton" name="pushButton_add">
+       <property name="geometry">
+        <rect>
+         <x>860</x>
+         <y>190</y>
+         <width>81</width>
+         <height>71</height>
+        </rect>
+       </property>
+       <property name="text">
+        <string>Add new</string>
+       </property>
       </widget>
      </widget>
      <widget class="QWidget" name="tab_sipm">

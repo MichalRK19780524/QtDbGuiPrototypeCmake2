@@ -6,6 +6,7 @@
 #include <QDebug>
 #include <QFileInfo>
 #include <QStandardItemModel>
+#include "wizard/addsipmwizard.h"
 
 QT_BEGIN_NAMESPACE
 namespace Ui { class Widget; }
@@ -22,6 +23,9 @@ public:
     static const QString sipmFilteredQueryString;
     static const QString scintillatorFilteredQueryString;
     static const QString afeComboBoxQueryString;
+    static const QString countryComboBoxQueryString;
+    static const QString institutionComboBoxQueryString;
+    static const QString roomNoComboBoxQueryString;
     static constexpr double vBrFrom = 50.0;
     static constexpr double vBrTo = 65.0;
     static constexpr double vOpFrom = 50.0;
@@ -40,6 +44,8 @@ private slots:
 
     void on_pushButton_searchScintillator_clicked();
 
+    void on_pushButton_add_clicked();
+
 private:
     Ui::Widget * ui;
     QSqlDatabase * mcordDatabase;
@@ -47,10 +53,13 @@ private:
     QSqlQuery * preparedScintillatorQuery;
     QStandardItemModel * mcordModelSipm;
     QStandardItemModel * mcordModelScintillator;
+    QStringList * countries;
+
+    AddSipmWizard *wizard;
 
     void addDataToModelSipm(QStandardItemModel * model, QList<QSqlQuery *> * queries);
     void addDataToModelScintillator(QStandardItemModel * model, QSqlQuery * query);
-    void addDataToStringList(QStringList * list, QSqlQuery * query);
+    void addDataToStringList(QStringList * list, QSqlQuery * query, QString columnName);
     static QList<QSqlQuery *> * createQueriesSipm(QSqlDatabase * mcordDatabase);
     QSqlQuery * createQuery(QSqlDatabase * mcordDatabase, QString queryString);
     void removeQuery(QSqlQuery * query);

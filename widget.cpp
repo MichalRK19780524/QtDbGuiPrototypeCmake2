@@ -1,5 +1,7 @@
 #include "widget.h"
 #include "ui_widget.h"
+#include "wizard/addsipmwizard.h"
+
 #include <QDateTime>
 #include <QCompleter>
 
@@ -82,6 +84,20 @@ R"(SELECT serial_number FROM device_afe_main_view
     UNION
     SELECT serial_number FROM device_afe_ext_view daev)";
 
+const QString Widget::countryComboBoxQueryString =
+        R"(SELECT DISTINCT country FROM location)";
+
+const QString Widget::institutionComboBoxQueryString =
+        R"(SELECT DISTINCT institution
+           FROM location
+           WHERE country = :country)";
+
+const QString Widget::roomNoComboBoxQueryString =
+        R"(SELECT DISTINCT room
+           FROM location
+           WHERE country = :country
+        )";
+
 const QString Widget::scintillatorFilteredQueryString =
 R"(SELECT d.serial_number AS serial_number,
        d.purchase_date AS purchase_date,
@@ -125,9 +141,13 @@ Widget::Widget(QWidget *parent)
     mcordModelScintillator = new QStandardItemModel(this);
     //TODO Utworzyć w bazie danych tabelkę (chyba jedna wystarczy) w której będą trzymane takie dane jak lista dostępnych państw, instytucji, pokojów, możliwych stanów urządzeń, itp.,
     //tak, żeby można było je wczytać przy starcie aplikacji.
-    QStringList countries = {"", "Poland", "Russia"}; //Zapoznać się z Qt Linguist, tak, żeby w programie i bazie danych były angielskie nazwy, a inne języki były uwzględnione jedynie w dedykowanym do tego narzędziu.
-    ui->comboBox_country->addItems(countries);
-    ui->comboBox_countryScintillator->addItems(countries);
+//    QStringList countries = {"", "Poland", "Russia"}; //Zapoznać się z Qt Linguist, tak, żeby w programie i bazie danych były angielskie nazwy, a inne języki były uwzględnione jedynie w dedykowanym do tego narzędziu.
+    QSqlQuery * countryComboBoxQuery = createQuery(mcordDatabase, countryComboBoxQueryString);
+    countries = new QStringList();
+    countries->append("");
+    addDataToStringList(countries, countryComboBoxQuery, "country");
+    ui->comboBox_country->addItems(*countries);
+    ui->comboBox_countryScintillator->addItems(*countries);
 
     QStringList institutions = {"", "NCBJ", "PW", "JINR"};
     ui->comboBox_institution->addItems(institutions);
@@ -183,7 +203,7 @@ Widget::Widget(QWidget *parent)
     QSqlQuery * afeComboBoxQuery = createQuery(mcordDatabase, afeComboBoxQueryString);
     QStringList * afeSerialNumberList = new QStringList();
     afeSerialNumberList->append("");
-    addDataToStringList(afeSerialNumberList,afeComboBoxQuery);
+    addDataToStringList(afeSerialNumberList, afeComboBoxQuery, "serial_number");
     QCompleter * completer = new QCompleter(*afeSerialNumberList, this);
     ui->comboBox_afeSerialNumber->setCompleter(completer);
     ui->comboBox_afeSerialNumber->addItems(*afeSerialNumberList);
@@ -191,6 +211,7 @@ Widget::Widget(QWidget *parent)
 
     preparedQueries = createQueriesSipm(mcordDatabase);
     preparedScintillatorQuery = createQuery(mcordDatabase, scintillatorFilteredQueryString);
+    wizard = new AddSipmWizard(mcordModelSipm, this);
 }
 
 Widget::~Widget()
@@ -376,13 +397,13 @@ void Widget::addDataToModelSipm(QStandardItemModel * model, QList<QSqlQuery *> *
 
 }
 
-void Widget::addDataToStringList(QStringList * list, QSqlQuery * query)
+void Widget::addDataToStringList(QStringList * list, QSqlQuery * query, QString columnName)
 {
     if(query->exec())
     {
        while(query->next())
        {
-        list->append(query->value("serial_number").toString());
+        list->append(query->value(columnName).toString());
        }
     }
     else
@@ -520,5 +541,11 @@ void Widget::on_pushButton_searchScintillator_clicked()
 
     addDataToModelScintillator(mcordModelScintillator, preparedScintillatorQuery);
     ui->tableViewScintillator->setModel(mcordModelScintillator);
+}
+
+
+void Widget::on_pushButton_add_clicked()
+{
+    wizard->show();
 }
 

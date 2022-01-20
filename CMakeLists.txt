@@ -20,6 +20,12 @@ set(PROJECT_SOURCES
         widget.cpp
         widget.h
         widget.ui
+        wizard/addsipmwizard.cpp
+        wizard/addsipmwizard.h
+        wizard/addsipmbasicpage.cpp
+        wizard/addsipmbasicpage.h
+        wizard/addsipmbasicpage.ui
+#        services/
 )
 
 if(${QT_VERSION_MAJOR} GREATER_EQUAL 6)
