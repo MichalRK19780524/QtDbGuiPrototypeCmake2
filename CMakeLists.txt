@@ -25,7 +25,11 @@ set(PROJECT_SOURCES
         wizard/addsipmbasicpage.cpp
         wizard/addsipmbasicpage.h
         wizard/addsipmbasicpage.ui
-#        services/
+        wizard/addsipmextrapage.h
+        wizard/addsipmextrapage.cpp
+        wizard/addsipmextrapage.ui
+        services/sipmrepository.h
+        services/sipmrepository.cpp
 )
 
 if(${QT_VERSION_MAJOR} GREATER_EQUAL 6)

@@ -1,4 +1,5 @@
 #include "addsipmbasicpage.h"
+#include "addsipmwizard.h"
 #include "ui_addsipmbasicpage.h"
 
 AddSipmBasicPage::AddSipmBasicPage(QWidget *parent) :
@@ -11,4 +12,15 @@ AddSipmBasicPage::AddSipmBasicPage(QWidget *parent) :
 AddSipmBasicPage::~AddSipmBasicPage()
 {
     delete ui;
+}
+
+int AddSipmBasicPage::nextId() const
+{
+        return AddSipmWizard::ADD_EXTRA;
+
+}
+
+void AddSipmBasicPage::setVisible(bool visible)
+{
+    QWizardPage::setVisible(visible);
 }

@@ -9,7 +9,7 @@ class AddSipmWizard : public QWizard
     Q_OBJECT
 public:
     explicit AddSipmWizard(QStandardItemModel *model, QWidget *parent = nullptr);
-    enum {Add_Basic, Add_Links};
+    enum {ADD_BASIC, ADD_EXTRA};
 
 
 signals:

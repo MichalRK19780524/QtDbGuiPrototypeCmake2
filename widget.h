@@ -20,9 +20,13 @@ public:
     Widget(QWidget *parent = nullptr);
     ~Widget();
 
-    static const QString sipmFilteredQueryString;
+    static const QString allAfeSipmFilteredQueryString;
+    static const QString mainAfeSipmFilteredQueryString;
+    static const QString extAfeSipmFilteredQueryString;
     static const QString scintillatorFilteredQueryString;
-    static const QString afeComboBoxQueryString;
+    static const QString allAfeComboBoxQueryString;
+    static const QString mainAfeComboBoxQueryString;
+    static const QString extAfeComboBoxQueryString;
     static const QString countryComboBoxQueryString;
     static const QString institutionComboBoxQueryString;
     static const QString roomNoComboBoxQueryString;
@@ -46,23 +50,39 @@ private slots:
 
     void on_pushButton_add_clicked();
 
+    void on_checkBox_afeMain_stateChanged(int arg1);
+
+    void on_checkBox_afeExt_stateChanged(int arg1);
+
 private:
     Ui::Widget * ui;
     QSqlDatabase * mcordDatabase;
-    QList<QSqlQuery *> * preparedQueries;
+    QSqlQuery * preparedAllAfeSipmQuery;
+    QSqlQuery * preparedMainAfeSipmQuery;
+    QSqlQuery * preparedExtAfeSipmQuery;
     QSqlQuery * preparedScintillatorQuery;
     QStandardItemModel * mcordModelSipm;
     QStandardItemModel * mcordModelScintillator;
     QStringList * countries;
 
+    QStringList * allAfeSerialNumberList;
+    QCompleter * allAfeCompleter;
+
+    QStringList * mainAfeSerialNumberList;
+    QCompleter * mainAfeCompleter;
+
+    QStringList * extAfeSerialNumberList;
+    QCompleter * extAfeCompleter;
+
     AddSipmWizard *wizard;
 
-    void addDataToModelSipm(QStandardItemModel * model, QList<QSqlQuery *> * queries);
+    void addDataToModelSipm(QStandardItemModel * model, QSqlQuery * query);
     void addDataToModelScintillator(QStandardItemModel * model, QSqlQuery * query);
     void addDataToStringList(QStringList * list, QSqlQuery * query, QString columnName);
     static QList<QSqlQuery *> * createQueriesSipm(QSqlDatabase * mcordDatabase);
     QSqlQuery * createQuery(QSqlDatabase * mcordDatabase, QString queryString);
     void removeQuery(QSqlQuery * query);
+    void openDatabase();
 };
 
 

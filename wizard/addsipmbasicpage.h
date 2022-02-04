@@ -15,6 +15,9 @@ public:
     explicit AddSipmBasicPage(QWidget *parent = nullptr);
     ~AddSipmBasicPage();
 
+    int nextId() const override;
+    void setVisible(bool visible) override;
+
 private:
     Ui::AddSipmBasicPage *ui;
 };
