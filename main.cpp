@@ -5,7 +5,8 @@
 int main(int argc, char *argv[])
 {
     QApplication a(argc, argv);
-    Widget w;
+    Repository * repo = new Repository();
+    Widget w(repo);
     w.show();
     return a.exec();
 }

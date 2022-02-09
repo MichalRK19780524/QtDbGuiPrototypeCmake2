@@ -28,8 +28,8 @@ set(PROJECT_SOURCES
         wizard/addsipmextrapage.h
         wizard/addsipmextrapage.cpp
         wizard/addsipmextrapage.ui
-        services/sipmrepository.h
-        services/sipmrepository.cpp
+        services/repository.h
+        services/repository.cpp
 )
 
 if(${QT_VERSION_MAJOR} GREATER_EQUAL 6)

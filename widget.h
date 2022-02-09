@@ -1,12 +1,16 @@
 #ifndef WIDGET_H
 #define WIDGET_H
 
+#include "wizard/addsipmwizard.h"
+#include "services/repository.h"
+
 #include <QWidget>
 #include <QtSql>
 #include <QDebug>
 #include <QFileInfo>
 #include <QStandardItemModel>
-#include "wizard/addsipmwizard.h"
+#include <QHash>
+
 
 QT_BEGIN_NAMESPACE
 namespace Ui { class Widget; }
@@ -17,19 +21,9 @@ class Widget : public QWidget
     Q_OBJECT
 
 public:
-    Widget(QWidget *parent = nullptr);
+    Widget(Repository * repo, QWidget *parent = nullptr);
     ~Widget();
-
-    static const QString allAfeSipmFilteredQueryString;
-    static const QString mainAfeSipmFilteredQueryString;
-    static const QString extAfeSipmFilteredQueryString;
-    static const QString scintillatorFilteredQueryString;
-    static const QString allAfeComboBoxQueryString;
-    static const QString mainAfeComboBoxQueryString;
-    static const QString extAfeComboBoxQueryString;
-    static const QString countryComboBoxQueryString;
-    static const QString institutionComboBoxQueryString;
-    static const QString roomNoComboBoxQueryString;
+    const Repository * repository;
     static constexpr double vBrFrom = 50.0;
     static constexpr double vBrTo = 65.0;
     static constexpr double vOpFrom = 50.0;
@@ -55,20 +49,22 @@ private slots:
     void on_checkBox_afeExt_stateChanged(int arg1);
 
 private:
+    QHash<QString, QVariant> * getSipmQueryParameters() const;
+    QHash<QString, QVariant> * getScintillatorQueryParameters() const;
+
     Ui::Widget * ui;
-    QSqlDatabase * mcordDatabase;
-    QSqlQuery * preparedAllAfeSipmQuery;
-    QSqlQuery * preparedMainAfeSipmQuery;
-    QSqlQuery * preparedExtAfeSipmQuery;
-    QSqlQuery * preparedScintillatorQuery;
+
+    QStringList * countries;
+    QStringList * allAfeSerialNumberList;
+    QStringList * mainAfeSerialNumberList;
+
     QStandardItemModel * mcordModelSipm;
     QStandardItemModel * mcordModelScintillator;
-    QStringList * countries;
+    QHash<QString, QVariant> * queryParameters;
 
-    QStringList * allAfeSerialNumberList;
+
     QCompleter * allAfeCompleter;
 
-    QStringList * mainAfeSerialNumberList;
     QCompleter * mainAfeCompleter;
 
     QStringList * extAfeSerialNumberList;
@@ -76,13 +72,6 @@ private:
 
     AddSipmWizard *wizard;
 
-    void addDataToModelSipm(QStandardItemModel * model, QSqlQuery * query);
-    void addDataToModelScintillator(QStandardItemModel * model, QSqlQuery * query);
-    void addDataToStringList(QStringList * list, QSqlQuery * query, QString columnName);
-    static QList<QSqlQuery *> * createQueriesSipm(QSqlDatabase * mcordDatabase);
-    QSqlQuery * createQuery(QSqlDatabase * mcordDatabase, QString queryString);
-    void removeQuery(QSqlQuery * query);
-    void openDatabase();
 };
 
 
