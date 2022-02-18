@@ -8,8 +8,8 @@
 
 Widget::Widget(Repository * repo, QWidget *parent)
     : QWidget(parent),
-      repository(repo),
-      ui(new Ui::Widget)
+      ui(new Ui::Widget),
+      repository(repo)
 {
     ui->setupUi(this);
 
@@ -19,34 +19,77 @@ Widget::Widget(Repository * repo, QWidget *parent)
     //tak, żeby można było je wczytać przy starcie aplikacji.
 //    QStringList countries = {"", "Poland", "Russia"}; //Zapoznać się z Qt Linguist, tak, żeby w programie i bazie danych były angielskie nazwy, a inne języki były uwzględnione jedynie w dedykowanym do tego narzędziu.
 
-    countries = new QStringList();
+    countries = new QStringList(); //Lista krajów jest taka sama dla wszstkich urządzeń i nie zależy od od stanu aplikacji
     countries->append("");
 
-    repo->addDataToStringList(countries, repo->getCountryComboBoxQuery(), "name");
+    repository->addDataToStringList(countries, repository->getCountryComboBoxQuery(), "name");
     ui->comboBox_country->addItems(*countries);
     ui->comboBox_countryScintillator->addItems(*countries);
 
-    QStringList institutions = {"", "NCBJ", "PW", "JINR"};
-    ui->comboBox_institution->addItems(institutions);
-    ui->comboBox_institutionScintillator->addItems(institutions);
+    QStringList sipmInstitutions{""};
 
-    QStringList rooms = {"", "40", "238"};
-    ui->comboBox_room->addItems(rooms);
-    ui->comboBox_roomScintillator->addItems(rooms);
+    QString selectedCountrySipm = ui->comboBox_country->currentText();
+    QVariant selectedCountrySipmOrNull = selectedCountrySipm.isEmpty() ? QVariant(QMetaType(QMetaType::QString)) : selectedCountrySipm;
 
-//    QStringList statuses = {"nowe", "zamontowano w belce"};
+    QHash<QString, QVariant> institutionSipmComboBoxQueryParameters{std::make_pair(":country", selectedCountrySipmOrNull)};
+
+    repository->addDataToStringList(&sipmInstitutions, repository->getInstitutionComboBoxQuery(), "name", institutionSipmComboBoxQueryParameters);
+    ui->comboBox_institution->clear();
+    ui->comboBox_institution->addItems(sipmInstitutions);
+
+    QStringList scintillatorInstitutions({""});
+    QString selectedCountryScintillator = ui->comboBox_countryScintillator->currentText();
+    QVariant selectedCountryScintillatorOrNull = selectedCountryScintillator.isEmpty() ? QVariant(QMetaType(QMetaType::QString)) : selectedCountrySipm;
+
+    QHash<QString, QVariant> institutionScintillatorComboBoxQueryParameters{std::make_pair(":country", selectedCountrySipmOrNull)};
+
+    repository->addDataToStringList(&scintillatorInstitutions, repository->getInstitutionComboBoxQuery(), "name", institutionScintillatorComboBoxQueryParameters);
+    ui->comboBox_institutionScintillator->clear();
+    ui->comboBox_institutionScintillator->addItems(scintillatorInstitutions);
+
+    QString selectedInstitutionSipm = ui->comboBox_institution->currentText();
+    QVariant selectedInstitutioSipmOrNull = selectedInstitutionSipm.isEmpty() ? QVariant(QMetaType(QMetaType::QString)) : selectedInstitutionSipm;
+
+    QHash<QString, QVariant> sipmRoomComboBoxQueryParameters
+    {
+        std::make_pair(":country", selectedCountrySipmOrNull),
+        std::make_pair(":institution", selectedInstitutioSipmOrNull)
+    };
+
+    QStringList sipmRooms({""});
+    repository->addDataToStringList(&sipmRooms, repository->getRoomNoComboBoxQuery(), "name", sipmRoomComboBoxQueryParameters);
+    ui->comboBox_room->clear();
+    ui->comboBox_room->addItems(sipmRooms);
+
+    QString selectedInstitutionScintillator = ui->comboBox_institutionScintillator->currentText();
+    QVariant selectedInstitutionScintillatorOrNull = selectedInstitutionScintillator.isEmpty() ? QVariant(QMetaType(QMetaType::QString)) : selectedInstitutionScintillator;
+
+    QHash<QString, QVariant> scintillatorRoomComboBoxQueryParameters
+    {
+        std::make_pair(":country", selectedCountryScintillatorOrNull),
+        std::make_pair(":institution", selectedInstitutionScintillatorOrNull)
+    };
+
+    QStringList scintillatorRooms({""});
+    repository->addDataToStringList(&scintillatorRooms, repository->getRoomNoComboBoxQuery(), "name", scintillatorRoomComboBoxQueryParameters);
+    ui->comboBox_roomScintillator->addItems(scintillatorRooms);
+
     ui->comboBox_status->addItem("", "");
-    ui->comboBox_status->addItem("new", "nowe");
-    ui->comboBox_status->addItem("mounted in the bar", "zamontowano w belce");
+    ui->comboBox_status->addItem("new", "new");
+    ui->comboBox_status->addItem("mounted in the bar", "bar");
 
     ui->comboBox_statusScintillator->addItem("", "");
-    ui->comboBox_statusScintillator->addItem("new", "nowe");
-    ui->comboBox_statusScintillator->addItem("mounted in the bar", "zamontowano w belce");
+    ui->comboBox_statusScintillator->addItem("new", "new");
+    ui->comboBox_statusScintillator->addItem("mounted in the bar", "bar");
 
     QStringList types = {"","SiPM", "AFE", "Hub", "Scintillator"};
     ui->comboBox_type->addItems(types);
 
-    QStringList models = {"","S13360-3075PE"};
+    ui->comboBox_country->addItems(*countries);
+    ui->comboBox_countryScintillator->addItems(*countries);
+
+    QStringList models{""};
+    repository->addDataToStringList(&models, repository->getSipmModelComboBoxQuery(), "name");
     ui->comboBox_model->addItems(models);
 
     QStringList modelsScintillator = {""};
@@ -96,7 +139,7 @@ Widget::Widget(Repository * repo, QWidget *parent)
 
     mcordModelSipm = new QStandardItemModel(this);
     mcordModelScintillator = new QStandardItemModel(this);
-    wizard = new AddSipmWizard(repository->getMcordModelSipm(), this);
+    wizard = new AddSipmWizard(repo, this);
 }
 
 Widget::~Widget()
@@ -282,5 +325,66 @@ void Widget::on_checkBox_afeExt_stateChanged(int state)
             ui->comboBox_afeSerialNumber->addItems(*extAfeSerialNumberList);
         }
     }
+}
+
+void Widget::on_comboBox_country_currentTextChanged(const QString &selectedSipmCountry)
+{
+    QVariant selectedSipmCountryOrNull = selectedSipmCountry.isEmpty() ? QVariant(QMetaType(QMetaType::QString)) : selectedSipmCountry;
+
+    QStringList sipmInstitutions({""});
+    QHash<QString, QVariant> institutionComboBoxQueryParameters{std::make_pair(":country", selectedSipmCountryOrNull)};
+
+    repository->addDataToStringList(&sipmInstitutions, repository->getInstitutionComboBoxQuery(), "name", institutionComboBoxQueryParameters);
+    ui->comboBox_institution->clear();
+    ui->comboBox_institution->addItems(sipmInstitutions);
+}
+
+void Widget::on_comboBox_institution_currentTextChanged(const QString &selectedSipmInstitution)
+{
+    QString selectedSipmCountry = ui->comboBox_country->currentText();
+    QVariant selectedSipmCountryOrNull = selectedSipmCountry.isEmpty() ? QVariant(QMetaType(QMetaType::QString)) : selectedSipmCountry;
+    QVariant selectedSipmInstitutioOrNull = selectedSipmInstitution.isEmpty() ? QVariant(QMetaType(QMetaType::QString)) : selectedSipmInstitution;
+
+    QHash<QString, QVariant> sipmRoomComboBoxQueryParameters
+    {
+        std::make_pair(":country", selectedSipmCountryOrNull),
+        std::make_pair(":institution", selectedSipmInstitutioOrNull)
+    };
+
+    QStringList sipmRooms({""});
+    repository->addDataToStringList(&sipmRooms, repository->getRoomNoComboBoxQuery(), "name", sipmRoomComboBoxQueryParameters);
+    ui->comboBox_room->clear();
+    ui->comboBox_room->addItems(sipmRooms);
+}
+
+
+void Widget::on_comboBox_countryScintillator_currentTextChanged(const QString &selectedScintillatorCountry)
+{
+    QVariant selectedCountryOrNull = selectedScintillatorCountry.isEmpty() ? QVariant(QMetaType(QMetaType::QString)) : selectedScintillatorCountry;
+
+    QStringList scintillatorInstitutions{""};
+    QHash<QString, QVariant> institutionComboBoxQueryParameters{std::make_pair(":country", selectedCountryOrNull)};
+
+    repository->addDataToStringList(&scintillatorInstitutions, repository->getInstitutionComboBoxQuery(), "name", institutionComboBoxQueryParameters);
+    ui->comboBox_institutionScintillator->clear();
+    ui->comboBox_institutionScintillator->addItems(scintillatorInstitutions);
+}
+
+void Widget::on_comboBox_institutionScintillator_currentTextChanged(const QString &selectedScintillatorInstitution)
+{
+    QString selectedScintillatorCountry = ui->comboBox_countryScintillator->currentText();
+    QVariant selectedScintillatorCountryOrNull = selectedScintillatorCountry.isEmpty() ? QVariant(QMetaType(QMetaType::QString)) : selectedScintillatorCountry;
+    QVariant selectedScintillatorInstitutioOrNull = selectedScintillatorInstitution.isEmpty() ? QVariant(QMetaType(QMetaType::QString)) : selectedScintillatorInstitution;
+
+    QHash<QString, QVariant> scintillatorRoomComboBoxQueryParameters
+    {
+        std::make_pair(":country", selectedScintillatorCountryOrNull),
+        std::make_pair(":institution", selectedScintillatorInstitutioOrNull)
+    };
+
+    QStringList scintillatorRooms({""});
+    repository->addDataToStringList(&scintillatorRooms, repository->getRoomNoComboBoxQuery(), "name", scintillatorRoomComboBoxQueryParameters);
+    ui->comboBox_roomScintillator->clear();
+    ui->comboBox_roomScintillator->addItems(scintillatorRooms);
 }
 

@@ -30,6 +30,12 @@ set(PROJECT_SOURCES
         wizard/addsipmextrapage.ui
         services/repository.h
         services/repository.cpp
+        DTO/sipmdto.h
+        DTO/sipmdto.cpp
+        DTO/devicedto.h
+        DTO/devicedto.cpp
+        DTO/location.h
+        DTO/location.cpp
 )
 
 if(${QT_VERSION_MAJOR} GREATER_EQUAL 6)

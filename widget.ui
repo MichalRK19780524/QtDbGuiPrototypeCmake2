@@ -23,7 +23,7 @@
    <item row="0" column="2">
     <widget class="QTabWidget" name="tabWidget">
      <property name="currentIndex">
-      <number>4</number>
+      <number>0</number>
      </property>
      <widget class="QWidget" name="tabAll">
       <attribute name="title">
@@ -694,6 +694,19 @@
        </property>
        <property name="text">
         <string>Add new</string>
+       </property>
+      </widget>
+      <widget class="QPushButton" name="pushButton">
+       <property name="geometry">
+        <rect>
+         <x>860</x>
+         <y>190</y>
+         <width>80</width>
+         <height>71</height>
+        </rect>
+       </property>
+       <property name="text">
+        <string>Edit</string>
        </property>
       </widget>
      </widget>

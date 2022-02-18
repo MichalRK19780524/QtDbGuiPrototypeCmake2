@@ -1,9 +1,11 @@
 #include "repository.h"
 #include <QStandardItemModel>
+#include <QLocale>
 #include <stdexcept>
 
 const QString Repository::allAfeSipmFilteredQueryString =
-R"(SELECT dsv.serial_number  AS serial_number,
+R"(
+SELECT dsv.serial_number  AS serial_number,
        dsv.purchase_date  AS purchase_date,
        dsv.model 		  AS model,
        dsv.status         AS status,
@@ -54,7 +56,8 @@ WHERE (dsv.serial_number = coalesce(:serialNumber, dsv.serial_number) OR dsv.ser
     ))";
 
 const QString Repository::mainAfeSipmFilteredQueryString =
-R"(SELECT dsv.serial_number  AS serial_number,
+R"(
+SELECT dsv.serial_number  AS serial_number,
        dsv.purchase_date  AS purchase_date,
        dsv.model 		  AS model,
        dsv.status         AS status,
@@ -91,67 +94,141 @@ WHERE (dsv.serial_number = coalesce(:serialNumber, dsv.serial_number) OR dsv.ser
     AND (damv.serial_number = coalesce(:afeSerialNumber, damv.serial_number)))";
 
 const QString Repository::extAfeSipmFilteredQueryString =
-R"(SELECT dsv.serial_number  AS serial_number,
-    dsv.purchase_date  AS purchase_date,
-    dsv.model 		  AS model,
-    dsv.status         AS status,
-    dsv.comment 	      AS comment,
-    i.name             AS institution,
-    c.name          	  AS country,
-    r.name             AS room,
-    dsv.v_br           AS v_br,
-    dsv.v_op           AS v_op,
-    dsv.dark_current   AS dark_current,
-    dsv.id 		      AS id,
-    CASE
-        WHEN daev.serial_number ISNULL THEN 'NOT ESTABLISHED'
-        WHEN daev.serial_number IS NOT NULL THEN 'EXT'
-    END
-                   AS afe_type,
-    daev.serial_number AS afe_serial_number
-    FROM location l
-    LEFT JOIN country c ON l.country_id = c.id
-    LEFT JOIN institution i ON l.institution_id = i.id
-    LEFT JOIN room r ON l.room_id = r.id
-    JOIN device_sipm_view dsv ON dsv.location_id = l.id
-    JOIN device_afe_ext_view daev ON dsv.id = daev.sipm_id AND dsv.date_from = daev.sipm_date_from
-    WHERE (dsv.serial_number = coalesce(:serialNumber, dsv.serial_number) OR dsv.serial_number ISNULL)
-    AND (c.name = coalesce(:country, c.name) OR c.name ISNULL)
-    AND (i.name = coalesce(:institution, i.name) OR i.name ISNULL)
-    AND (r.name = coalesce(:room, r.name) OR r.name  ISNULL)
-    AND (dsv.purchase_date BETWEEN :purchaseDateFrom AND :purchaseDateTo OR dsv.purchase_date ISNULL)
-    AND (dsv.status = coalesce(:status, dsv.status) OR dsv.status ISNULL)
-    AND (dsv.model = coalesce(:model, dsv.model) OR dsv.model ISNULL)
-    AND (dsv.v_br BETWEEN :vBrFrom AND :vBrTo OR dsv.v_br ISNULL)
-    AND (dsv.v_op BETWEEN :vOpFrom AND :vOpTo OR dsv.v_op ISNULL)
-    AND (dsv.dark_current BETWEEN :darkCurrentFrom AND :darkCurrentTo OR dsv.dark_current ISNULL)
-    AND (daev.serial_number = coalesce(:afeSerialNumber, daev.serial_number)))";
+R"(
+SELECT dsv.serial_number  AS serial_number,
+       dsv.purchase_date  AS purchase_date,
+       dsv.model 		  AS model,
+       dsv.status         AS status,
+       dsv.comment 	      AS comment,
+       i.name             AS institution,
+       c.name          	  AS country,
+       r.name             AS room,
+       dsv.v_br           AS v_br,
+       dsv.v_op           AS v_op,
+       dsv.dark_current   AS dark_current,
+       dsv.id 		      AS id,
+       CASE
+           WHEN daev.serial_number ISNULL THEN 'NOT ESTABLISHED'
+           WHEN daev.serial_number IS NOT NULL THEN 'EXT'
+       END
+                      AS afe_type,
+       daev.serial_number AS afe_serial_number
+       FROM location l
+       LEFT JOIN country c ON l.country_id = c.id
+       LEFT JOIN institution i ON l.institution_id = i.id
+       LEFT JOIN room r ON l.room_id = r.id
+       JOIN device_sipm_view dsv ON dsv.location_id = l.id
+       JOIN device_afe_ext_view daev ON dsv.id = daev.sipm_id AND dsv.date_from = daev.sipm_date_from
+       WHERE (dsv.serial_number = coalesce(:serialNumber, dsv.serial_number) OR dsv.serial_number ISNULL)
+            AND (c.name = coalesce(:country, c.name) OR c.name ISNULL)
+            AND (i.name = coalesce(:institution, i.name) OR i.name ISNULL)
+            AND (r.name = coalesce(:room, r.name) OR r.name  ISNULL)
+            AND (dsv.purchase_date BETWEEN :purchaseDateFrom AND :purchaseDateTo OR dsv.purchase_date ISNULL)
+            AND (dsv.status = coalesce(:status, dsv.status) OR dsv.status ISNULL)
+            AND (dsv.model = coalesce(:model, dsv.model) OR dsv.model ISNULL)
+            AND (dsv.v_br BETWEEN :vBrFrom AND :vBrTo OR dsv.v_br ISNULL)
+            AND (dsv.v_op BETWEEN :vOpFrom AND :vOpTo OR dsv.v_op ISNULL)
+            AND (dsv.dark_current BETWEEN :darkCurrentFrom AND :darkCurrentTo OR dsv.dark_current ISNULL)
+            AND (daev.serial_number = coalesce(:afeSerialNumber, daev.serial_number)))";
+
+const QString Repository::deviceInsertingQueryString =
+R"(
+INSERT INTO
+        device (id,
+        date_from,
+        serial_number,
+        purchase_date,
+        status,
+        comments,
+        location_id)
+        SELECT
+            (
+            SELECT
+                MAX(id) + 1
+            FROM
+                device
+            ),
+            CAST((julianday('now') - 2440587.5)* 86400000 AS INTEGER),
+            :serial_number,
+            :purchase_date,
+            'new',
+            :comments,
+            (
+            SELECT
+                id
+            FROM
+                country_institution_room_location_view
+            WHERE
+                country = :country
+                AND institution = :institution
+                AND room = :room
+            )
+            RETURNING id, date_from
+)";
+
+const QString Repository::sipmInsertingQueryString =
+R"(
+INSERT INTO
+    sipm(id,
+    date_from,
+    v_br,
+    dark_current,
+    sipm_model_id)
+SELECT
+    :id,
+    :date_from,
+    :v_br,
+    :dark_current,
+    (
+        SELECT id
+        FROM sipm_model
+        WHERE name = :model_name
+    )
+)";
 
 const QString Repository::allAfeComboBoxQueryString =
-R"(SELECT serial_number FROM device_afe_main_view
-    UNION
-    SELECT serial_number FROM device_afe_ext_view daev)";
+R"(
+SELECT serial_number
+FROM device_afe_main_view
+UNION
+SELECT serial_number
+FROM device_afe_ext_view daev)";
 
 const QString Repository::mainAfeComboBoxQueryString =
-R"(SELECT serial_number FROM device_afe_main_view)";
+R"(
+SELECT serial_number
+FROM device_afe_main_view)";
 
 const QString Repository::extAfeComboBoxQueryString =
-R"(SELECT serial_number FROM device_afe_ext_view daev)";
+R"(
+SELECT serial_number
+FROM device_afe_ext_view daev)";
 
 const QString Repository::countryComboBoxQueryString =
-        R"(SELECT name FROM country)";
+R"(
+SELECT name
+FROM country)";
+
+const QString Repository::sipmModelComboBoxQueryString =
+R"(
+SELECT name
+FROM sipm_model)";
 
 const QString Repository::institutionComboBoxQueryString =
-        R"(SELECT i.name
-           FROM institution i
-           LEFT JOIN country c ON i.country_id = c.id
-           WHERE c.name = :country)";
+R"(
+SELECT i.name AS name
+FROM institution i
+JOIN country c ON i.country_id = c.id
+WHERE c.name = coalesce(:country, c.name))";
 
 const QString Repository::roomNoComboBoxQueryString =
-        R"(SELECT DISTINCT room
-           FROM location
-           WHERE country = :country
-        )";
+R"(
+SELECT r.name AS name
+FROM room r
+JOIN institution i ON r.institution_id = i.id
+JOIN country c ON i.country_id = c.id
+WHERE c.name = coalesce(:country, c.name)
+AND   i.name = coalesce(:institution, i.name))";
 
 const QString Repository::scintillatorFilteredQueryString =
 R"(SELECT dsv.serial_number 	AS serial_number,
@@ -180,7 +257,12 @@ Repository::Repository()
     openDatabase();
     mcordModelSipm = new QStandardItemModel(this);
     mcordModelScintillator = new QStandardItemModel(this);
+
     countryComboBoxQuery = createQuery(mcordDatabase, countryComboBoxQueryString);
+    institutionComboBoxQuery = createQuery(mcordDatabase, institutionComboBoxQueryString);
+    roomNoComboBoxQuery = createQuery(mcordDatabase, roomNoComboBoxQueryString);
+
+    sipmModelComboBoxQuery = createQuery(mcordDatabase, sipmModelComboBoxQueryString);
 
     QSqlQuery * allAfeComboBoxQuery = createQuery(mcordDatabase, allAfeComboBoxQueryString);
     allAfeSerialNumberList = new QStringList();
@@ -203,22 +285,32 @@ Repository::Repository()
     preparedAllAfeSipmQuery = createQuery(mcordDatabase, allAfeSipmFilteredQueryString);
     preparedMainAfeSipmQuery = createQuery(mcordDatabase, mainAfeSipmFilteredQueryString);
     preparedExtAfeSipmQuery = createQuery(mcordDatabase, extAfeSipmFilteredQueryString);
+    preparedDeviceInsertingQuery = createQuery(mcordDatabase, deviceInsertingQueryString);
+    preparedSipmInsertingQuery = createQuery(mcordDatabase, sipmInsertingQueryString);
     preparedScintillatorQuery = createQuery(mcordDatabase, scintillatorFilteredQueryString);
 }
 
 Repository::~Repository()
 {
     removeQuery(countryComboBoxQuery);
+    removeQuery(institutionComboBoxQuery);
     removeQuery(preparedAllAfeSipmQuery);
     removeQuery(preparedMainAfeSipmQuery);
     removeQuery(preparedExtAfeSipmQuery);
+    removeQuery(preparedDeviceInsertingQuery);
+    removeQuery(preparedSipmInsertingQuery);
     removeQuery(preparedScintillatorQuery);
+    delete mcordModelSipm;
+    mcordModelSipm = nullptr;
+    delete mcordModelScintillator;
+    mcordModelScintillator = nullptr;
     delete allAfeSerialNumberList;
     allAfeSerialNumberList = nullptr;
     delete mainAfeSerialNumberList;
     mainAfeSerialNumberList = nullptr;
     delete extAfeSerialNumberList;
     extAfeSerialNumberList = nullptr;
+    closeDatabase();
 }
 
 void Repository::openDatabase()
@@ -236,6 +328,12 @@ void Repository::openDatabase()
     {
         qDebug() << "Error! MCORD database could not be opened";
     }
+}
+
+void Repository::closeDatabase(){
+    mcordDatabase->close();
+    delete mcordDatabase;
+    mcordDatabase = nullptr;
 }
 
 void Repository::addSipmQueryResultToModel(QStandardItemModel * model, QSqlQuery * query, const SipmQueryParameters * sipmParameters) const
@@ -277,9 +375,9 @@ void Repository::addSipmQueryResultToModel(QStandardItemModel * model, QSqlQuery
                 new QStandardItem(query->value("comment").toString()),
                 new QStandardItem(query->value("country").toString()),
                 new QStandardItem(query->value("room").toString()),
-                new QStandardItem(query->value("v_br").toString()),
-                new QStandardItem(query->value("v_op").toString()),
-                new QStandardItem(query->value("dark_current").toString()),
+                new QStandardItem(query->value("v_br").isNull() ? "" : QString::number(query->value("v_br").toDouble(), 'f', 2)),
+                new QStandardItem(query->value("v_op").isNull() ? "" : QString::number(query->value("v_op").toDouble(), 'f', 2)),
+                new QStandardItem(query->value("dark_current").isNull() ? "" : QString::number(query->value("dark_current").toDouble(), 'f', 2)),
                 new QStandardItem(query->value("afe_type").toString()),
                 new QStandardItem(query->value("afe_serial_number").toString())
             };
@@ -394,6 +492,74 @@ void Repository::addDataToModelSipm(QStandardItemModel * model, QHash<QString, Q
 
 }
 
+bool Repository::saveSipmData(const SipmDto * sipmData) const
+{
+    if(mcordDatabase->transaction())
+    {
+        preparedDeviceInsertingQuery->bindValue(":serial_number", sipmData->getSerialNumber());
+        preparedDeviceInsertingQuery->bindValue(":purchase_date", sipmData->getPurchaseDateMsc());
+        preparedDeviceInsertingQuery->bindValue(":comments", sipmData->getComments());
+        Location location = sipmData->getLocation();
+        preparedDeviceInsertingQuery->bindValue(":country", location.getCountry());
+        preparedDeviceInsertingQuery->bindValue(":institution", location.getInstitution());
+        preparedDeviceInsertingQuery->bindValue(":room", location.getRoom());
+        if(preparedDeviceInsertingQuery->exec())
+        {
+            preparedDeviceInsertingQuery->first();
+            qint64 id = preparedDeviceInsertingQuery->value("id").toLongLong();
+            qint64 dateFrom = preparedDeviceInsertingQuery->value("date_from").toLongLong();
+
+            double vBr = sipmData->getVBr();
+            double darkCurrent = sipmData->getDarkCurrent();
+            QString modelName = sipmData->getModel();
+
+            preparedSipmInsertingQuery->bindValue(":id", id);
+            preparedSipmInsertingQuery->bindValue(":date_from", dateFrom);
+            preparedSipmInsertingQuery->bindValue(":v_br", vBr);
+            preparedSipmInsertingQuery->bindValue(":dark_current", darkCurrent);
+            preparedSipmInsertingQuery->bindValue(":model_name", modelName);
+
+            if(!preparedSipmInsertingQuery->exec())
+            {
+                qDebug() << "Failed to execute query inserting data into sipm table";
+                if(!mcordDatabase->rollback())
+                {
+                    qCritical() << "Fail to rollback query inserting data into device table";
+                    return false;
+                }
+            }
+        }
+        else
+        {
+            qDebug() << "Failed to execute query inserting data into device table";
+            if(!mcordDatabase->rollback())
+            {
+                qCritical() << "Fail to rollback query inserting data into device table";
+                return false;
+            }
+        }
+
+        preparedDeviceInsertingQuery->finish();
+        if(!mcordDatabase->commit())
+        {
+            qDebug() << "Failed to commit";
+            if(!mcordDatabase->rollback())
+            {
+                qCritical() << "Fail to rollback query inserting data into device and sipm tables";
+                return false;
+            }
+            return false;
+        }
+    }
+    else
+    {
+        qDebug() << "Failed to start transaction mode";
+
+    }
+
+    return true;
+}
+
 void Repository::addScintillatorQueryResultToModel(QStandardItemModel * model, QSqlQuery * query, const ScintillatorQueryParameters * scintillatorParameters) const
 {
 
@@ -410,7 +576,7 @@ void Repository::addScintillatorQueryResultToModel(QStandardItemModel * model, Q
     {
         while(query->next())
         {
-            long long purchaseDateMsc = query->value("purchase_date").toLongLong();
+            qint64 purchaseDateMsc = query->value("purchase_date").toLongLong();
             QString purchaseDateText = "";
             if(purchaseDateMsc != 0)
             {
@@ -423,10 +589,10 @@ void Repository::addScintillatorQueryResultToModel(QStandardItemModel * model, Q
                 new QStandardItem(purchaseDateText),
                 new QStandardItem(preparedScintillatorQuery->value("model").toString()),
                 new QStandardItem(preparedScintillatorQuery->value("status").toString()),
-                new QStandardItem(preparedScintillatorQuery->value("institution").toString()),
-                new QStandardItem(preparedScintillatorQuery->value("comment").toString()),
                 new QStandardItem(preparedScintillatorQuery->value("country").toString()),
+                new QStandardItem(preparedScintillatorQuery->value("institution").toString()),
                 new QStandardItem(preparedScintillatorQuery->value("room").toString()),
+                new QStandardItem(preparedScintillatorQuery->value("comment").toString())
             };
             model->appendRow(rowList);
         }
@@ -447,13 +613,13 @@ void Repository::addDataToModelScintillator(QStandardItemModel * model, QHash<QS
     QStringList headers;
     headers.append("Type");
     headers.append("Serial number");
-    headers.append("Country");
-    headers.append("Status");
-    headers.append("Institution");
     headers.append("Purchase date");
     headers.append("Model");
-    headers.append("Comment");
+    headers.append("Status");
+    headers.append("Country");
+    headers.append("Institution");
     headers.append("Room");
+    headers.append("Comment");
 
     QString serialNumber = queryParameters->value("serialNumber").toString();
     QVariant serialNumberOrNull = serialNumber.isEmpty() ? QVariant(QMetaType(QMetaType::QString)) : serialNumber; //Proponowane zamiaste tej przestażałej wersji rozwiązania nie działają
@@ -505,7 +671,7 @@ void Repository::removeQuery(QSqlQuery * query)
     query = nullptr;
 }
 
-void Repository::addDataToStringList(QStringList * list, QSqlQuery * query, QString columnName)
+void Repository::addDataToStringList(QStringList * list, QSqlQuery * query, QString columnName) const
 {
     if(query->exec())
     {
@@ -520,3 +686,28 @@ void Repository::addDataToStringList(QStringList * list, QSqlQuery * query, QStr
 
     }
 }
+
+void Repository::addDataToStringList(QStringList * list, QSqlQuery * query, QString columnName, QHash<QString, QVariant> parameters) const
+{
+
+    QHash<QString, QVariant>::iterator i;
+    for (i = parameters.begin(); i != parameters.end(); ++i)
+    {
+        query->bindValue(i.key(), i.value());
+    }
+
+    if(query->exec())
+    {
+       while(query->next())
+       {
+        list->append(query->value(columnName).toString());
+       }
+    }
+    else
+    {
+        qDebug() << "Error! The query has failed" << query->lastError() << query->boundValues();
+
+    }
+}
+
+

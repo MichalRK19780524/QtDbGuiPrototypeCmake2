@@ -23,7 +23,7 @@ class Widget : public QWidget
 public:
     Widget(Repository * repo, QWidget *parent = nullptr);
     ~Widget();
-    const Repository * repository;
+
     static constexpr double vBrFrom = 50.0;
     static constexpr double vBrTo = 65.0;
     static constexpr double vOpFrom = 50.0;
@@ -48,13 +48,23 @@ private slots:
 
     void on_checkBox_afeExt_stateChanged(int arg1);
 
+    void on_comboBox_countryScintillator_currentTextChanged(const QString &arg1);
+
+    void on_comboBox_country_currentTextChanged(const QString &arg1);
+
+    void on_comboBox_institution_currentTextChanged(const QString &arg1);
+
+    void on_comboBox_institutionScintillator_currentTextChanged(const QString &arg1);
+
 private:
+    Ui::Widget * ui;
+    const Repository * repository;
+
     QHash<QString, QVariant> * getSipmQueryParameters() const;
     QHash<QString, QVariant> * getScintillatorQueryParameters() const;
 
-    Ui::Widget * ui;
-
     QStringList * countries;
+//    QStringList * scintillatorRooms;
     QStringList * allAfeSerialNumberList;
     QStringList * mainAfeSerialNumberList;
 

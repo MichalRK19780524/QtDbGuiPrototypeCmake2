@@ -124,9 +124,9 @@
    <property name="geometry">
     <rect>
      <x>0</x>
-     <y>0</y>
+     <y>10</y>
      <width>531</width>
-     <height>81</height>
+     <height>71</height>
     </rect>
    </property>
    <property name="font">
@@ -167,7 +167,7 @@
      <rect>
       <x>190</x>
       <y>30</y>
-      <width>181</width>
+      <width>171</width>
       <height>31</height>
      </rect>
     </property>
@@ -194,50 +194,6 @@
      </item>
     </layout>
    </widget>
-   <widget class="QWidget" name="layoutWidget_3">
-    <property name="geometry">
-     <rect>
-      <x>760</x>
-      <y>30</y>
-      <width>191</width>
-      <height>31</height>
-     </rect>
-    </property>
-    <layout class="QHBoxLayout" name="horizontalLayout_model">
-     <item>
-      <widget class="QLabel" name="label_model">
-       <property name="text">
-        <string>Model</string>
-       </property>
-      </widget>
-     </item>
-     <item>
-      <widget class="QComboBox" name="comboBox_model"/>
-     </item>
-    </layout>
-   </widget>
-   <widget class="QWidget" name="layoutWidget_4">
-    <property name="geometry">
-     <rect>
-      <x>380</x>
-      <y>30</y>
-      <width>141</width>
-      <height>31</height>
-     </rect>
-    </property>
-    <layout class="QHBoxLayout" name="horizontalLayout_status">
-     <item>
-      <widget class="QLabel" name="label_status">
-       <property name="text">
-        <string>Status</string>
-       </property>
-      </widget>
-     </item>
-     <item>
-      <widget class="QComboBox" name="comboBox_status"/>
-     </item>
-    </layout>
-   </widget>
    <widget class="QLabel" name="label">
     <property name="geometry">
      <rect>
@@ -257,6 +213,28 @@
      <string>Basic</string>
     </property>
    </widget>
+   <widget class="QWidget" name="layoutWidget_3">
+    <property name="geometry">
+     <rect>
+      <x>380</x>
+      <y>30</y>
+      <width>151</width>
+      <height>31</height>
+     </rect>
+    </property>
+    <layout class="QHBoxLayout" name="horizontalLayout_model">
+     <item>
+      <widget class="QLabel" name="label_model">
+       <property name="text">
+        <string>Model</string>
+       </property>
+      </widget>
+     </item>
+     <item>
+      <widget class="QComboBox" name="comboBox_model"/>
+     </item>
+    </layout>
+   </widget>
   </widget>
   <widget class="QFrame" name="frame_3">
    <property name="geometry">
@@ -264,7 +242,7 @@
      <x>0</x>
      <y>170</y>
      <width>531</width>
-     <height>91</height>
+     <height>71</height>
     </rect>
    </property>
    <property name="frameShape">
@@ -278,7 +256,7 @@
      <rect>
       <x>10</x>
       <y>30</y>
-      <width>131</width>
+      <width>241</width>
       <height>31</height>
      </rect>
     </property>
@@ -294,7 +272,7 @@
       </widget>
      </item>
      <item>
-      <widget class="QDoubleSpinBox" name="doubleSpinBox_vBrFrom">
+      <widget class="QDoubleSpinBox" name="doubleSpinBox_vBr">
        <property name="locale">
         <locale language="Polish" country="Poland"/>
        </property>
@@ -314,9 +292,9 @@
    <widget class="QWidget" name="layoutWidget_11">
     <property name="geometry">
      <rect>
-      <x>170</x>
+      <x>270</x>
       <y>30</y>
-      <width>151</width>
+      <width>251</width>
       <height>31</height>
      </rect>
     </property>
@@ -329,7 +307,7 @@
       </widget>
      </item>
      <item>
-      <widget class="QDoubleSpinBox" name="doubleSpinBox_darkCurrentFrom">
+      <widget class="QDoubleSpinBox" name="doubleSpinBox_darkCurrent">
        <property name="minimum">
         <double>0.500000000000000</double>
        </property>
@@ -341,41 +319,6 @@
        </property>
        <property name="value">
         <double>0.500000000000000</double>
-       </property>
-      </widget>
-     </item>
-    </layout>
-   </widget>
-   <widget class="QWidget" name="layoutWidget_10">
-    <property name="geometry">
-     <rect>
-      <x>360</x>
-      <y>30</y>
-      <width>151</width>
-      <height>31</height>
-     </rect>
-    </property>
-    <layout class="QHBoxLayout" name="horizontalLayout_purchaseDate_3">
-     <item>
-      <widget class="QLabel" name="label_PurchaseDateFrom">
-       <property name="text">
-        <string>v_op [V]  from</string>
-       </property>
-       <property name="alignment">
-        <set>Qt::AlignCenter</set>
-       </property>
-      </widget>
-     </item>
-     <item>
-      <widget class="QDoubleSpinBox" name="doubleSpinBox_vOpFrom">
-       <property name="minimum">
-        <double>50.000000000000000</double>
-       </property>
-       <property name="maximum">
-        <double>69.989999999999995</double>
-       </property>
-       <property name="singleStep">
-        <double>0.100000000000000</double>
        </property>
       </widget>
      </item>
@@ -405,9 +348,9 @@
    <property name="geometry">
     <rect>
      <x>0</x>
-     <y>270</y>
+     <y>260</y>
      <width>531</width>
-     <height>71</height>
+     <height>81</height>
     </rect>
    </property>
    <property name="frameShape">
@@ -435,7 +378,7 @@
      <string>Comments</string>
     </property>
    </widget>
-   <widget class="QTextEdit" name="textEdit">
+   <widget class="QTextEdit" name="textEdit_comments">
     <property name="geometry">
      <rect>
       <x>10</x>
