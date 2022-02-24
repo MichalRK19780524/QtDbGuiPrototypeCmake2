@@ -2,6 +2,7 @@
 #include "addsipmwizard.h"
 #include "ui_addsipmbasicpage.h"
 #include "services/repository.h"
+#include "dialogs/sipmmodeladddialog.h"
 #include <QPushButton>
 
 AddSipmBasicPage::AddSipmBasicPage(const Repository * repo, QWidget *parent) :
@@ -43,6 +44,7 @@ AddSipmBasicPage::AddSipmBasicPage(const Repository * repo, QWidget *parent) :
     repository->addDataToStringList(&models, repository->getSipmModelComboBoxQuery(), "name");
     ui->comboBox_model->clear();
     ui->comboBox_model->addItems(models);
+//    ui->comboBox_model->addItem("PLUS");
 
     setButtonText(QWizard::FinishButton, tr("&Save"));
 }
@@ -71,10 +73,11 @@ const SipmDto AddSipmBasicPage::getSipmData() const
 
     QString model = ui->comboBox_model->currentText();
 
-    double vBr = ui->doubleSpinBox_vBr->value();
-    double darkCurrent = ui->doubleSpinBox_darkCurrent->value();
+    const double vBr = ui->doubleSpinBox_vBr->value();
+    const double vOp = ui->doubleSpinBox_vOp->value();
+    const double darkCurrent = ui->doubleSpinBox_darkCurrent->value();
 
-    return SipmDto(deviceDto, location, model, vBr, darkCurrent);
+    return SipmDto(deviceDto, location, model, vBr, vOp, darkCurrent);
 }
 
 void AddSipmBasicPage::on_comboBox_country_currentTextChanged(const QString &selectedCountry)
@@ -108,4 +111,15 @@ void AddSipmBasicPage::on_comboBox_institution_currentTextChanged(const QString 
     ui->comboBox_room->addItems(rooms);
 }
 
+
+
+//void AddSipmBasicPage::on_comboBox_model_activated(int index)
+//{
+//    int lastIndex = ui->comboBox_model->count() - 1;
+//    if (index == lastIndex)
+//    {
+//       sipmModelAddDialog = new SipmModelAddDialog(repository, this);
+//       sipmModelAddDialog->exec();
+//    }
+//}
 

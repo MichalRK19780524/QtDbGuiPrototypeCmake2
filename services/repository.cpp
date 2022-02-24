@@ -1,7 +1,9 @@
 #include "repository.h"
+#include "DTO/sipmmodeldto.h"
 #include <QStandardItemModel>
 #include <QLocale>
 #include <stdexcept>
+
 
 const QString Repository::allAfeSipmFilteredQueryString =
 R"(
@@ -172,18 +174,27 @@ INSERT INTO
     sipm(id,
     date_from,
     v_br,
+    v_op,
     dark_current,
     sipm_model_id)
 SELECT
     :id,
     :date_from,
     :v_br,
+    :v_op,
     :dark_current,
     (
         SELECT id
         FROM sipm_model
         WHERE name = :model_name
     )
+)";
+
+const QString Repository::sipmModelInsertingQueryString =
+R"(
+INSERT INTO
+    sipm_model (name, overvoltage)
+VALUES (:name, :overvoltage)
 )";
 
 const QString Repository::allAfeComboBoxQueryString =
@@ -213,6 +224,11 @@ const QString Repository::sipmModelComboBoxQueryString =
 R"(
 SELECT name
 FROM sipm_model)";
+
+const QString Repository::scintillatorModelComboBoxQueryString =
+R"(
+SELECT name
+FROM scintillator_model)";
 
 const QString Repository::institutionComboBoxQueryString =
 R"(
@@ -263,6 +279,7 @@ Repository::Repository()
     roomNoComboBoxQuery = createQuery(mcordDatabase, roomNoComboBoxQueryString);
 
     sipmModelComboBoxQuery = createQuery(mcordDatabase, sipmModelComboBoxQueryString);
+    scintillatorModelComboBoxQuery = createQuery(mcordDatabase, scintillatorModelComboBoxQueryString);
 
     QSqlQuery * allAfeComboBoxQuery = createQuery(mcordDatabase, allAfeComboBoxQueryString);
     allAfeSerialNumberList = new QStringList();
@@ -288,6 +305,7 @@ Repository::Repository()
     preparedDeviceInsertingQuery = createQuery(mcordDatabase, deviceInsertingQueryString);
     preparedSipmInsertingQuery = createQuery(mcordDatabase, sipmInsertingQueryString);
     preparedScintillatorQuery = createQuery(mcordDatabase, scintillatorFilteredQueryString);
+    preparedSipmModelInsertingQuery = createQuery(mcordDatabase, sipmModelInsertingQueryString);
 }
 
 Repository::~Repository()
@@ -300,6 +318,7 @@ Repository::~Repository()
     removeQuery(preparedDeviceInsertingQuery);
     removeQuery(preparedSipmInsertingQuery);
     removeQuery(preparedScintillatorQuery);
+    removeQuery(preparedSipmModelInsertingQuery);
     delete mcordModelSipm;
     mcordModelSipm = nullptr;
     delete mcordModelScintillator;
@@ -344,7 +363,7 @@ void Repository::addSipmQueryResultToModel(QStandardItemModel * model, QSqlQuery
     query->bindValue(":country", sipmParameters->countryOrNull);
     query->bindValue(":status", sipmParameters->statusOrNull);
     query->bindValue(":institution", sipmParameters->institutionOrNull);
-    query->bindValue(":model", sipmParameters->deviceModelOrNull);
+    query->bindValue(":model", sipmParameters->sipmModelOrNull);
     query->bindValue(":room", sipmParameters->roomOrNull);
     query->bindValue(":vBrFrom", sipmParameters->vBrFrom);
     query->bindValue(":vBrTo", sipmParameters->vBrTo);
@@ -424,8 +443,8 @@ void Repository::addDataToModelSipm(QStandardItemModel * model, QHash<QString, Q
     QString institution = queryParameters->value("institution").toString();
     QVariant institutionOrNull = institution.isEmpty() ? QVariant(QMetaType(QMetaType::QString)) : institution;
 
-    QString deviceModel = queryParameters->value("deviceModel").toString();
-    QVariant deviceModelOrNull = deviceModel.isEmpty() ? QVariant(QMetaType(QMetaType::QString)) : deviceModel;
+    QString sipmModel = queryParameters->value("sipmModel").toString();
+    QVariant sipmModelOrNull = sipmModel.isEmpty() ? QVariant(QMetaType(QMetaType::QString)) : sipmModel;
 
     QString room = queryParameters->value("room").toString();
     QVariant roomOrNull = room.isEmpty() ? QVariant(QMetaType(QMetaType::QString)) : room;
@@ -473,7 +492,7 @@ void Repository::addDataToModelSipm(QStandardItemModel * model, QHash<QString, Q
             countryOrNull,
             statusOrNull,
             institutionOrNull,
-            deviceModelOrNull,
+            sipmModelOrNull,
             roomOrNull,
             purchaseDateFrom,
             purchaseDateTo,
@@ -490,6 +509,18 @@ void Repository::addDataToModelSipm(QStandardItemModel * model, QHash<QString, Q
     model->setColumnCount(headers.size());
     model->setHorizontalHeaderLabels(headers);
 
+}
+
+bool Repository::saveSipmModelData(const SipmModelDto * sipmModel) const
+{
+    preparedSipmModelInsertingQuery->bindValue(":name", sipmModel->getName());
+    preparedSipmModelInsertingQuery->bindValue(":overvoltage",sipmModel->getOvervoltage());
+    if(!preparedSipmModelInsertingQuery->exec())
+    {
+        qDebug() << "Failed to execute query inserting data into sipm_model table";
+        return false;
+    }
+    return true;
 }
 
 bool Repository::saveSipmData(const SipmDto * sipmData) const
@@ -510,12 +541,14 @@ bool Repository::saveSipmData(const SipmDto * sipmData) const
             qint64 dateFrom = preparedDeviceInsertingQuery->value("date_from").toLongLong();
 
             double vBr = sipmData->getVBr();
+            double vOp = sipmData->getVOp();
             double darkCurrent = sipmData->getDarkCurrent();
             QString modelName = sipmData->getModel();
 
             preparedSipmInsertingQuery->bindValue(":id", id);
             preparedSipmInsertingQuery->bindValue(":date_from", dateFrom);
             preparedSipmInsertingQuery->bindValue(":v_br", vBr);
+            preparedSipmInsertingQuery->bindValue(":v_op", vOp);
             preparedSipmInsertingQuery->bindValue(":dark_current", darkCurrent);
             preparedSipmInsertingQuery->bindValue(":model_name", modelName);
 
@@ -554,7 +587,7 @@ bool Repository::saveSipmData(const SipmDto * sipmData) const
     else
     {
         qDebug() << "Failed to start transaction mode";
-
+        return false;
     }
 
     return true;
@@ -569,7 +602,7 @@ void Repository::addScintillatorQueryResultToModel(QStandardItemModel * model, Q
     query->bindValue(":country", scintillatorParameters->countryOrNull);
     query->bindValue(":status", scintillatorParameters->statusOrNull);
     query->bindValue(":institution", scintillatorParameters->institutionOrNull);
-    query->bindValue(":model", scintillatorParameters->deviceModelOrNull);
+    query->bindValue(":model", scintillatorParameters->scintillatorModelOrNull);
     query->bindValue(":room", scintillatorParameters->roomOrNull);
 
     if(query->exec())
@@ -635,8 +668,9 @@ void Repository::addDataToModelScintillator(QStandardItemModel * model, QHash<QS
 
     QString room = queryParameters->value("room").toString();
     QVariant roomOrNull = room.isEmpty() ? QVariant(QMetaType(QMetaType::QString)) : room;
-    qDebug() << room;
-    qDebug() << roomOrNull;
+
+    QString scintillatorModel = queryParameters->value("scintillatorModel").toString();
+    QVariant scintillatorModelOrNull = scintillatorModel.isEmpty() ? QVariant(QMetaType(QMetaType::QString)) : scintillatorModel;
 
     QDateTime purchaseDateFrom = queryParameters->value("purchaseDateFrom").toDateTime();
 
@@ -648,6 +682,7 @@ void Repository::addDataToModelScintillator(QStandardItemModel * model, QHash<QS
             countryOrNull,
             statusOrNull,
             institutionOrNull,
+            scintillatorModelOrNull,
             roomOrNull,
             purchaseDateFrom,
             purchaseDateTo

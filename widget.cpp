@@ -72,6 +72,7 @@ Widget::Widget(Repository * repo, QWidget *parent)
 
     QStringList scintillatorRooms({""});
     repository->addDataToStringList(&scintillatorRooms, repository->getRoomNoComboBoxQuery(), "name", scintillatorRoomComboBoxQueryParameters);
+    ui->comboBox_roomScintillator->clear();
     ui->comboBox_roomScintillator->addItems(scintillatorRooms);
 
     ui->comboBox_status->addItem("", "");
@@ -85,14 +86,12 @@ Widget::Widget(Repository * repo, QWidget *parent)
     QStringList types = {"","SiPM", "AFE", "Hub", "Scintillator"};
     ui->comboBox_type->addItems(types);
 
-    ui->comboBox_country->addItems(*countries);
-    ui->comboBox_countryScintillator->addItems(*countries);
-
     QStringList models{""};
     repository->addDataToStringList(&models, repository->getSipmModelComboBoxQuery(), "name");
     ui->comboBox_model->addItems(models);
 
     QStringList modelsScintillator = {""};
+    repository->addDataToStringList(&modelsScintillator, repository->getScintillatorModelComboBoxQuery(), "name");
     ui->comboBox_modelScintillator->addItems(modelsScintillator);
 
     ui->dateEdit_fromPurchaseDate->setCalendarPopup(true);
@@ -218,8 +217,8 @@ QHash<QString, QVariant> * Widget::getScintillatorQueryParameters() const
     result->insert("status", QVariant(status));
     QString institution = ui->comboBox_institutionScintillator->currentText();
     result->insert("institution", QVariant(institution));
-    QString deviceModel = ui->comboBox_modelScintillator->currentText();
-    result->insert("deviceModel", QVariant(deviceModel));
+    QString scintillatorModel = ui->comboBox_modelScintillator->currentText();
+    result->insert("scintillatorModel", QVariant(scintillatorModel));
     QString room = ui->comboBox_roomScintillator->currentText();
     result->insert("room", QVariant(room));
     QDateTime purchaseDateFrom = ui->dateEdit_fromPurchaseDateScintillator->date().startOfDay();

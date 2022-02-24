@@ -256,7 +256,7 @@
      <rect>
       <x>10</x>
       <y>30</y>
-      <width>241</width>
+      <width>151</width>
       <height>31</height>
      </rect>
     </property>
@@ -292,9 +292,9 @@
    <widget class="QWidget" name="layoutWidget_11">
     <property name="geometry">
      <rect>
-      <x>270</x>
+      <x>340</x>
       <y>30</y>
-      <width>251</width>
+      <width>181</width>
       <height>31</height>
      </rect>
     </property>
@@ -342,6 +342,44 @@
     <property name="text">
      <string>SiPM</string>
     </property>
+   </widget>
+   <widget class="QWidget" name="layoutWidget_10">
+    <property name="geometry">
+     <rect>
+      <x>180</x>
+      <y>30</y>
+      <width>141</width>
+      <height>31</height>
+     </rect>
+    </property>
+    <layout class="QHBoxLayout" name="horizontalLayout_purchaseDate_3">
+     <item>
+      <widget class="QLabel" name="label_vBrFrom_2">
+       <property name="text">
+        <string>v_op [V]</string>
+       </property>
+       <property name="alignment">
+        <set>Qt::AlignCenter</set>
+       </property>
+      </widget>
+     </item>
+     <item>
+      <widget class="QDoubleSpinBox" name="doubleSpinBox_vOp">
+       <property name="locale">
+        <locale language="Polish" country="Poland"/>
+       </property>
+       <property name="minimum">
+        <double>50.000000000000000</double>
+       </property>
+       <property name="maximum">
+        <double>69.989999999999995</double>
+       </property>
+       <property name="singleStep">
+        <double>0.100000000000000</double>
+       </property>
+      </widget>
+     </item>
+    </layout>
    </widget>
   </widget>
   <widget class="QFrame" name="frame">

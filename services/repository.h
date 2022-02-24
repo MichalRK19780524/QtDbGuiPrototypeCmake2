@@ -1,6 +1,7 @@
 #ifndef SIPMREPOSITORY_H
 #define SIPMREPOSITORY_H
 #include "DTO/sipmdto.h"
+#include "DTO/sipmmodeldto.h"
 
 #include <QObject>
 #include <QtSql>
@@ -24,14 +25,17 @@ public:
     static const QString institutionComboBoxQueryString;
     static const QString roomNoComboBoxQueryString;
     static const QString sipmModelComboBoxQueryString;
+    static const QString scintillatorModelComboBoxQueryString;
     static const QString deviceInsertingQueryString;
     static const QString sipmInsertingQueryString;
+    static const QString sipmModelInsertingQueryString;
 
     enum sipmQueryType {ALL_AFE, MAIN_AFE, EXT_AFE};
 
     void addDataToModelSipm(QStandardItemModel * model, QHash<QString, QVariant> * queryParameters) const;
 //    void insertDataFromSipmModel(QStandardItemModel * model) const;
     bool saveSipmData(const SipmDto * sipmData) const;
+    bool saveSipmModelData(const SipmModelDto * sipmModelData) const;
     void addDataToModelScintillator(QStandardItemModel * model, QHash<QString, QVariant> * queryParameters) const;
     void addDataToStringList(QStringList * list, QSqlQuery * query, QString columnName) const;
     void addDataToStringList(QStringList * list, QSqlQuery * query, QString columnName, QHash<QString, QVariant> parameters) const;
@@ -77,6 +81,11 @@ public:
         return sipmModelComboBoxQuery;
     }
 
+    QSqlQuery * getScintillatorModelComboBoxQuery() const
+    {
+        return scintillatorModelComboBoxQuery;
+    }
+
 private:
     QSqlDatabase * mcordDatabase;
     QSqlQuery * preparedAllAfeSipmQuery;
@@ -85,10 +94,12 @@ private:
     QSqlQuery * preparedDeviceInsertingQuery;
     QSqlQuery * preparedSipmInsertingQuery;
     QSqlQuery * preparedScintillatorQuery;
+    QSqlQuery * preparedSipmModelInsertingQuery;
     QSqlQuery * countryComboBoxQuery;
     QSqlQuery * institutionComboBoxQuery;
     QSqlQuery * roomNoComboBoxQuery;
     QSqlQuery * sipmModelComboBoxQuery;
+    QSqlQuery * scintillatorModelComboBoxQuery;
     QStandardItemModel * mcordModelSipm;
     QStandardItemModel * mcordModelScintillator;
     QStringList * countries;
@@ -102,7 +113,7 @@ private:
         QVariant countryOrNull;
         QVariant statusOrNull;
         QVariant institutionOrNull;
-        QVariant deviceModelOrNull;
+        QVariant sipmModelOrNull;
         QVariant roomOrNull;
         QDateTime purchaseDateFrom;
         QDateTime purchaseDateTo;
@@ -121,7 +132,7 @@ private:
         QVariant countryOrNull;
         QVariant statusOrNull;
         QVariant institutionOrNull;
-        QVariant deviceModelOrNull;
+        QVariant scintillatorModelOrNull;
         QVariant roomOrNull;
         QDateTime purchaseDateFrom;
         QDateTime purchaseDateTo;

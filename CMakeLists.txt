@@ -36,6 +36,13 @@ set(PROJECT_SOURCES
         DTO/devicedto.cpp
         DTO/location.h
         DTO/location.cpp
+        dialogs/sipmmodeladddialog.h
+        dialogs/sipmmodeladddialog.cpp
+        dialogs/sipmmodeladddialog.ui
+        DTO/sipmmodeldto.h
+        DTO/sipmmodeldto.cpp
+        CustomWidgets/dynamicqcombobox.h
+        CustomWidgets/dynamicqcombobox.cpp
 )
 
 if(${QT_VERSION_MAJOR} GREATER_EQUAL 6)

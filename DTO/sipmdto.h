@@ -10,10 +10,11 @@
 class SipmDto : public DeviceDto
 {
 public:
-    SipmDto(const DeviceDto & deviceDto, const Location & location, const QString &model, const double &vBr, const double &darkCurrent) :
+    SipmDto(const DeviceDto & deviceDto, const Location & location, const QString & model, const double & vBr, const double & vOp, const double &darkCurrent) :
         DeviceDto(deviceDto),
         model(model),
         vBr(vBr),
+        vOp(vOp),
         darkCurrent(darkCurrent),
         location(location)
     {}
@@ -24,9 +25,14 @@ public:
         return model;
     }
 
-    const double & getVBr() const
+    const double getVBr() const
     {
         return vBr;
+    }
+
+    double getVOp() const
+    {
+        return vOp;
     }
 
     const double & getDarkCurrent() const
@@ -42,6 +48,7 @@ public:
 private:
     QString model;
     double vBr;
+    double vOp;
     double darkCurrent;
     Location location;
 };
